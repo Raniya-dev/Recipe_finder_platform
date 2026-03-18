@@ -31,7 +31,7 @@ function Navbar({ className }) {
     <div className="hidden md:flex items-center justify-between">
       
       <h1 className={`flex items-center gap-2 text-xl font-semibold ${isLight ? "text-black" : "text-white"}`}>
-        <img className="w-10 h-10 rounded-full" src="/orgforkandspoon.jpg" alt="logo" />
+        <img className="w-10 h-10 rounded-full" src="./orgforkandspoon.jpg" alt="logo" />
         <span>TasteShare</span>
       </h1>
 

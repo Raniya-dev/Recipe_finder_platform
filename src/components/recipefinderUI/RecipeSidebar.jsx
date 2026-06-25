@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
-import { SlidersHorizontal } from "lucide-react"
+import { SlidersHorizontal, ChevronLeft, ChevronRight } from "lucide-react"
 import RecipeCard from "./RecipeCard";
 import { useSelector } from "react-redux";
+
+import AXIOS_API from "../../api/api";
+
+
 
 const filtersSections = [
   {
@@ -31,10 +35,10 @@ const filtersSections = [
   {
     title: "CUISINE",
     items: [
-      { label: "American", type: "area", value: "American" },
+
       { label: "Chinese", type: "area", value: "Chinese" },
       { label: "Thai", type: "area", value: "Thai" },
-      { label: "Indian", type: "area", value: "Indian" },
+      { label: "Indian", type: "area", value: "India" },
       { label: "Turkish", type: "area", value: "Turkish" },
       { label: "Saudi Arabian", type: "area", value: "Saudi Arabian" },
       { label: "Spanish", type: "area", value: "Spanish" },
@@ -56,30 +60,40 @@ export default function RecipeSidebar() {
   const [selectedFilter, setSelectedFilter] = useState(filtersSections[0].items[0]);
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1)
+
+  const [maxTime, setMaxTime] = useState(60);
+
 
   useEffect(() => {
-    fetchRecipes(selectedFilter);
-  }, [selectedFilter]);
+    const fetchRecipes = async () => {
+      try {
+        setLoading(true);
 
-  const fetchRecipes = async (filter) => {
-    setLoading(true);
+        const res = await AXIOS_API.get(
+          `/api/mealdb/recipe/search?type=${selectedFilter.type}&value=${selectedFilter.value}&maxTime=${maxTime}&page=${page}&limit=6`
+        );
 
-    let url =
-      filter.type === "area"
-        ? `https://www.themealdb.com/api/json/v1/1/filter.php?a=${filter.value}`
-        : `https://www.themealdb.com/api/json/v1/1/filter.php?c=${filter.value}`;
+        setRecipes(res.data.recipes || []);
+        setTotalPages(res.data.totalPages || 1);
 
-    try {
-      const res = await fetch(url);
-      const data = await res.json();
+      } catch (error) {
+        console.log(error);
+        setRecipes([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      setRecipes(data.meals || []);
-    } catch (error) {
-      console.log(error);
-      setRecipes([]);
-    }
+    fetchRecipes();
+  }, [selectedFilter, maxTime, page]);
 
-    setLoading(false);
+
+
+  const handleMaxTimeChange = (e) => {
+    setMaxTime(e.target.value);
+    setPage(1);
   };
 
 
@@ -120,23 +134,42 @@ export default function RecipeSidebar() {
             </h3>
 
             <div className="flex md:block gap-3">
-               
-            {section.items.map((item) => (
-              <label key={item.label} className={` whitespace-nowrap  text-sm px-3 py-1 rounded-full ${isLight ? "bg-orange-100 text-slate-700" : "bg-slate-500 text-white"} md:bg-transparent block mb-2 cursor-pointer hover:text-orange-600 font-poppins`}>
-                <input
-                  type="radio"
-                  name="recipeFilter"
-                  checked={selectedFilter?.label === item.label}
-                  onChange={() => setSelectedFilter(item)}
-                  className=" hidden md:inline mr-2"
-                />
-                {item.label}
-              </label>
-            ))}
+
+              {section.items.map((item) => (
+                <label key={item.label} className={` whitespace-nowrap  text-sm px-3 py-1 rounded-full ${isLight ? "bg-orange-100 text-slate-700" : "bg-slate-500 text-white"} md:bg-transparent block mb-2 cursor-pointer hover:text-orange-600 font-poppins`}>
+                  <input
+                    type="radio"
+                    name="recipeFilter"
+                    checked={selectedFilter?.label === item.label}
+                    onChange={() => {
+                      setSelectedFilter(item)
+                      setPage(1)
+                    }
+                    }
+                    className=" hidden md:inline mr-2"
+                  />
+                  {item.label}
+                </label>
+              ))}
             </div>
 
           </div>
         ))}
+        <div className="mt-4">
+          <h3 className="font-semibold mb-2">
+            Cooking Time: {maxTime} mins
+          </h3>
+
+          <input
+            type="range"
+            min="10"
+            max="65"
+            step="5"
+            value={maxTime}
+            onChange={handleMaxTimeChange}
+            className="w-full accent-orange-600"
+          />
+        </div>
       </div>
 
       {/* Recipes Section */}
@@ -146,13 +179,35 @@ export default function RecipeSidebar() {
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
           {recipes.length > 0 ? (
             recipes.map((recipe) => (
-              <RecipeCard key={recipe.idMeal} recipe={recipe} />
+              <RecipeCard key={recipe._id || recipe.idMeal || recipe.id} recipe={recipe} />
             ))
           ) : (
-            !loading && <p>No recipes found</p>
+            !loading && <p className="text-orange-600">No recipes found</p>
           )}
         </div>
+        <div className="flex justify-center items-center gap-4 mt-8 mb-10">
+          <button
+            disabled={page === 1}
+            onClick={() => setPage(page - 1)}
+            className="px-4 py-2 bg-orange-400 text-white rounded-full disabled:opacity-50"
+          >
+            <ChevronLeft className="text-white w-3 h-3" />
+          </button>
+
+          <span className={`text-sm ${isLight ? "text-slate-700 font-mono" : "text-slate-300 font-mono"}`}>
+            Page {page}/{totalPages}
+          </span>
+
+          <button
+            disabled={page === totalPages}
+            onClick={() => setPage(page + 1)}
+            className="px-4 py-2 bg-orange-400 text-white rounded-full disabled:opacity-50"
+          >
+            <ChevronRight className="text-white  w-3 h-3 rounded" />
+          </button>
+        </div>
       </div>
+
 
     </div>
   )

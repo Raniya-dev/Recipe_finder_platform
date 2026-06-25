@@ -1,11 +1,46 @@
-import { useSelector } from "react-redux";
+
 import RecipeCard from "./RecipeCard";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { setFavorites } from "../../redux/features/favouriteSlice";
+import AXIOS_API from "../../api/api";
+
 
 export default function Saved() {
 
   const favorites = useSelector(
     state => state.favorites.items
   );
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    loadFavorites();
+  }, []);
+
+  const loadFavorites = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await AXIOS_API.get(
+        "/api/recipes/getfavorite",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      dispatch(
+        setFavorites(
+          res.data.map(fav => fav.recipeId)
+        )
+      );
+
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
 
@@ -23,7 +58,7 @@ export default function Saved() {
 
           {favorites.map(recipe => (
             <RecipeCard
-              key={recipe.idMeal}
+              key={recipe._id}
               recipe={recipe}
             />
           ))}

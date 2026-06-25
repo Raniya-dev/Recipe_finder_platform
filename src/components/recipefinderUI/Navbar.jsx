@@ -1,7 +1,8 @@
-import { Bot, HomeIcon, Bookmark, Sun, Moon } from "lucide-react"
+import { Pizza, HomeIcon, Bookmark, Sun, Moon,LogIn ,LogOut,ChefHat} from "lucide-react"
 import { useSelector, useDispatch } from "react-redux"
 import { toggleTheme } from "../../redux/features/themeSlice"
 import { Link } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 
 function Navbar({ className }) {
 
@@ -16,6 +17,13 @@ function Navbar({ className }) {
     })
 
     const dispatch = useDispatch()
+
+        const token = localStorage.getItem("token")
+    const navigate = useNavigate()
+    const handleLogout =() =>{
+        localStorage.removeItem("token")
+        navigate("/login",{replace:true})
+    }
 
     return (
     <nav className={`
@@ -48,6 +56,40 @@ function Navbar({ className }) {
           </li>
         </Link>
 
+        <Link to={"/recipes"}>
+          <li className={`flex gap-1 transition ${isLight ? "text-slate-700 hover:text-orange-600" : "text-slate-300 hover:text-orange-600"} cursor-pointer`}>
+            <ChefHat className="w-5 h-5" /> MyKitchen
+          </li>
+        </Link>
+
+        
+       {/* <Link to={"/mykitchen"}>
+        <div className={`flex gap-1 transition duration-150 active:scale-90 ${isLight ? "text-slate-700 active:text-orange-600" : "text-slate-300 active:text-orange-600"} `}>
+          <ChefHat className="w-5 h-5" />
+          <span>My Kitchen</span>
+        </div>
+      </Link> */}
+
+        {token ?(
+          <button onClick={handleLogout} className={`flex gap-1 transition ${isLight ? "text-slate-700 hover:text-orange-600" : "text-slate-300 hover:text-orange-600"} cursor-pointer`}>
+            <LogOut className="w-5 h-5" /> Logout
+          </button>
+        ):(
+          <>
+           <Link to={"/Login"}>
+          <li className={`flex gap-1 transition ${isLight ? "text-slate-700 hover:text-orange-600" : "text-slate-300 hover:text-orange-600"} cursor-pointer`}>
+            <LogIn className="w-5 h-5" /> Login
+          </li>
+        </Link>
+        
+          
+          </>
+
+        )}
+
+   
+        
+
         <li onClick={() => dispatch(toggleTheme())} className={`cursor-pointer transition ${isLight ? "text-slate-700 hover:text-orange-600" : "text-slate-300 hover:text-orange-600"} `}>
           {isLight ? <Sun /> : <Moon />}
         </li>
@@ -71,6 +113,20 @@ function Navbar({ className }) {
           <span>Saved</span>
         </div>
       </Link>
+
+      <Link to={"/recipes"}>
+        <div className={`flex flex-col items-center text-xs transition duration-150 active:scale-90 ${isLight ? "text-slate-700 active:text-orange-600" : "text-slate-300 active:text-orange-600"} `}>
+          <ChefHat className="w-5 h-5" />
+          <span>Recipes</span>
+        </div>
+      </Link>
+
+       {/* <Link to={"/mykitchen"}>
+        <div className={`flex flex-col items-center text-xs transition duration-150 active:scale-90 ${isLight ? "text-slate-700 active:text-orange-600" : "text-slate-300 active:text-orange-600"} `}>
+          <ChefHat className="w-5 h-5" />
+          <span>My Kitchen</span>
+        </div>
+      </Link> */}
 
       <div
         onClick={() => dispatch(toggleTheme())}

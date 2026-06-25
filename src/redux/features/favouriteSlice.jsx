@@ -11,20 +11,24 @@ const favoritesSlice = createSlice({
       const recipe = action.payload;
 
       const exists = state.items.find(
-        item => item.idMeal === recipe.idMeal
+        item => item._id === recipe._id
       );
 
       if (exists) {
         state.items = state.items.filter(
-          item => item.idMeal !== recipe.idMeal
+          item => item._id !== recipe._id
         );
       } else {
         state.items.push(recipe);
       }
 
-    }
+    },
+
+    setFavorites: (state, action) => {
+    state.items = action.payload;
+  }
   }
 });
 
-export const { toggleFavorite } = favoritesSlice.actions;
+export const { toggleFavorite,setFavorites } = favoritesSlice.actions;
 export default favoritesSlice.reducer;
